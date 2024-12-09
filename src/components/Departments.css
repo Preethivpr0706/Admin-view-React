@@ -1,0 +1,95 @@
+/* General Styles */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7fc;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.view-dept {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+}
+
+
+/* Department Button Styles */
+
+button {
+    background-color: #3CBAC4 !important;
+    color: #fff;
+    padding: 20px 40px;
+    margin: 15px 0;
+    font-size: 2rem;
+    /* Increased font size */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 100%;
+    /* Take up full width */
+    max-width: 500px;
+    /* Set a max width for the buttons */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+button:hover {
+    background-color: #2a8c8b !important;
+    transform: scale(1.05);
+}
+
+button:focus {
+    outline: none;
+}
+
+
+/* Section Styling */
+
+.view-dept p {
+    font-size: 1.2rem;
+    color: #666;
+    margin-top: 20px;
+}
+
+
+/* Media Queries for Responsiveness */
+
+@media (max-width: 768px) {
+    .view-dept {
+        padding: 20px;
+        margin: 20px;
+    }
+    button {
+        font-size: 1.8rem;
+        /* Slightly smaller font size for smaller screens */
+        padding: 18px 30px;
+    }
+    h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    button {
+        font-size: 1.5rem;
+        /* Reduce font size more for very small screens */
+        padding: 15px 25px;
+    }
+    h1 {
+        font-size: 1.8rem;
+    }
+}
