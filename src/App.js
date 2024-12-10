@@ -4,6 +4,7 @@ import Departments from "./components/Departments";
 import ViewPOC from "./components/ViewPOC";
 import ViewAppointments from "./components/ViewAppointments";
 import HomePage from "./components/HomePage";
+import BookAppointment from "./components/BookAppointment";
 
 const App = () => {
   return (
@@ -21,6 +22,9 @@ const App = () => {
           
           {/* Appointments for a POC */}
           <Route path="/view-appointments/:pocId" element={<ViewAppointments />} />
+
+          {/* Book appointment */}
+          <Route path="/book-appointment" element={<BookAppointment />} /> 
         </Routes>
       </div>
     </Router>

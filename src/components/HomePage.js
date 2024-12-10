@@ -9,7 +9,7 @@ const HomePage = () => {
     <div className="homepage">
       <h1>Admin Dashboard</h1>
       <button onClick={() => navigate("/departments")}>View POCs</button>
-      <button onClick={() => alert("Book appointment coming soon")}>Book Appointment</button>
+      <button onClick={() =>  navigate("/book-appointment")}>Book Appointment</button>
     </div>
   );
 };

@@ -105,10 +105,113 @@ function getDayOfWeek(date) {
     }
 }
 
+// Create or update user details
+const createUser = async(req, res) => {
+    const { name, phone, email, location } = req.body;
 
+    try {
+        console.log("Request body:", req.body); // Log incoming request data
+        const [user] = await pool.execute(
+            "SELECT User_ID FROM Users WHERE User_Contact = ?", [phone]
+        );
+
+        console.log("Existing user query result:", user); // Log query result
+
+        if (user.length > 0) {
+            console.log("User already exists with ID:", user[0].User_ID);
+            return res.json({ userId: user[0].User_ID });
+        }
+
+        const [result] = await pool.execute(
+            "INSERT INTO Users (User_Name, User_Contact, User_Email, User_Location) VALUES (?, ?, ?, ?)", [name, phone, email, location]
+        );
+
+        console.log("User created with ID:", result.insertId);
+        res.json({ userId: result.insertId });
+    } catch (error) {
+        console.error("Error in createUser function:", error.message); // Log the exact error
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+// Fetch available dates for a POC
+const getAvailableDates = async(req, res) => {
+    const { pocId } = req.body;
+    console.log(pocId);
+
+    if (!pocId) {
+        return res.status(400).json({ error: "POC ID is required" });
+    }
+
+    try {
+        const [dates] = await pool.execute(
+            `SELECT DISTINCT
+  DATE_FORMAT(Schedule_Date, '%Y-%m-%d') AS Schedule_Date
+FROM poc_available_slots
+WHERE POC_ID = ?
+  AND Schedule_Date >= CURDATE()
+  AND appointments_per_slot > 0
+  AND EXISTS (
+    SELECT 1
+    FROM poc_available_slots AS slots
+    WHERE slots.POC_ID = poc_available_slots.POC_ID
+      AND slots.Schedule_Date = poc_available_slots.Schedule_Date
+      AND (slots.Schedule_Date > CURDATE() OR (slots.Schedule_Date = CURDATE() AND slots.Start_Time >= CURTIME()))
+  )
+ORDER BY Schedule_Date`, [pocId]
+        );
+        console.log(dates);
+        res.json(dates.map((row) => row.Schedule_Date));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//Fetch available times for a POC on a selected date
+const getAvailableTimes = async(req, res) => {
+    const { pocId, date } = req.body;
+
+    try {
+        const [times] = await pool.execute(
+            `SELECT DISTINCT   
+        Start_Time AS appointment_time   
+        FROM poc_available_slots   
+        WHERE POC_ID = ?   
+        AND Schedule_Date = STR_TO_DATE(?, '%Y-%m-%d')   
+        AND appointments_per_slot > 0   
+        AND (Schedule_Date > CURDATE() OR (Schedule_Date = CURDATE() AND Start_Time >= CURTIME()))   
+        ORDER BY Start_Time`, [pocId, date]
+        );
+        res.json(times.map((t) => t.appointment_time));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+//Create appointment
+const createAppointment = async(req, res) => {
+    const { userId, pocId, date, time, type } = req.body;
+    console.log(req.body);
+    const clientId = 1;
+    try {
+        const [result] = await pool.execute(
+            "INSERT INTO Appointments (Client_ID,User_ID, POC_ID, Appointment_Date, Appointment_Time, Appointment_Type, Status,Is_Active) VALUES (?, ?, ?, ?, ?, ?, 'Confirmed',true)", [clientId, userId, pocId, date, time, type]
+        );
+        console.log("Appointment created with ID:", result.insertId);
+        res.json({ appointmentId: result.insertId });
+    } catch (error) {
+        console.error("Error in createAppointment function:", error.message); // Log the exact error
+        res.status(500).json({ error: error.message });
+    }
+};
 
 module.exports = {
     getDepartments,
     getPocsByDepartment,
     getAppointmentDetailsForPoc,
+    createAppointment,
+    getAvailableDates,
+    getAvailableTimes,
+    createUser
 };
