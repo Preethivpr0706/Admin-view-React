@@ -152,6 +152,7 @@ FROM poc_available_slots
 WHERE POC_ID = ?
   AND Schedule_Date >= CURDATE()
   AND appointments_per_slot > 0
+  AND Active_Status = 'unblocked'
   AND EXISTS (
     SELECT 1
     FROM poc_available_slots AS slots
@@ -159,7 +160,8 @@ WHERE POC_ID = ?
       AND slots.Schedule_Date = poc_available_slots.Schedule_Date
       AND (slots.Schedule_Date > CURDATE() OR (slots.Schedule_Date = CURDATE() AND slots.Start_Time >= CURTIME()))
   )
-ORDER BY Schedule_Date`, [pocId]
+ORDER BY Schedule_Date
+LIMIT 10`, [pocId]
         );
         console.log(dates);
         res.json(dates.map((row) => row.Schedule_Date));
@@ -180,6 +182,7 @@ const getAvailableTimes = async(req, res) => {
         WHERE POC_ID = ?   
         AND Schedule_Date = STR_TO_DATE(?, '%Y-%m-%d')   
         AND appointments_per_slot > 0   
+        AND Active_Status = 'unblocked'
         AND (Schedule_Date > CURDATE() OR (Schedule_Date = CURDATE() AND Start_Time >= CURTIME()))   
         ORDER BY Start_Time`, [pocId, date]
         );
@@ -189,22 +192,155 @@ const getAvailableTimes = async(req, res) => {
     }
 };
 
+
 //Create appointment
 const createAppointment = async(req, res) => {
     const { userId, pocId, date, time, type } = req.body;
     console.log(req.body);
     const clientId = 1;
+
     try {
+        // Insert the new appointment
         const [result] = await pool.execute(
-            "INSERT INTO Appointments (Client_ID,User_ID, POC_ID, Appointment_Date, Appointment_Time, Appointment_Type, Status,Is_Active) VALUES (?, ?, ?, ?, ?, ?, 'Confirmed',true)", [clientId, userId, pocId, date, time, type]
+            "INSERT INTO Appointments (Client_ID, User_ID, POC_ID, Appointment_Date, Appointment_Time, Appointment_Type, Status, Is_Active) VALUES (?, ?, ?, ?, ?, ?, 'Confirmed', true)", [clientId, userId, pocId, date, time, type]
         );
+
         console.log("Appointment created with ID:", result.insertId);
+
+        // Update available slots
+        const updateQuery = `
+            UPDATE POC_Available_Slots
+            SET appointments_per_slot = appointments_per_slot - 1
+            WHERE POC_ID = ? AND Schedule_Date = ? AND Start_Time = ? AND appointments_per_slot > 0;
+        `;
+        const [updateResult] = await pool.execute(updateQuery, [pocId, date, time]);
+
+        if (updateResult.affectedRows === 0) {
+            console.warn("No available slots to update for the given POC ID, date, and time.");
+            // Optionally handle this scenario by reverting the insert operation, if necessary.
+        }
+
         res.json({ appointmentId: result.insertId });
     } catch (error) {
         console.error("Error in createAppointment function:", error.message); // Log the exact error
         res.status(500).json({ error: error.message });
     }
 };
+const updateFullAvailability = async(req, res) => {
+    const { pocId, date } = req.body;
+    console.log(req.body);
+    try {
+        await pool.execute(
+            `UPDATE poc_available_slots SET Active_Status ='blocked' WHERE POC_ID = ? AND Schedule_Date = ?`, [pocId, date]
+        );
+        res.status(200).json({ message: 'Full availability updated successfully.' });
+    } catch (error) {
+        console.error('Error updating full availability:', error.message);
+        res.status(500).json({ message: 'Error updating full availability.' });
+    }
+};
+
+
+
+const updatePartialAvailability = async(req, res) => {
+    const { pocId, date, timings } = req.body;
+    console.log(req.body);
+    try {
+        if (!timings || timings.length === 0) {
+            return res.status(400).json({ message: 'No timings selected.' });
+        }
+
+        const escapedTimings = timings.map(timing => pool.escape(timing));
+        const query = `UPDATE poc_available_slots SET Active_Status ='blocked' WHERE POC_ID = ? AND Schedule_Date = ? AND Start_Time IN (${escapedTimings.join(', ')})`;
+        const params = [pocId, date];
+
+        await pool.execute(query, params);
+        res.status(200).json({ message: 'Partial availability updated successfully.' });
+    } catch (error) {
+        console.error('Error updating partial availability:', error.message);
+        res.status(500).json({ message: 'Error updating partial availability.' });
+    }
+};
+
+
+//Fetch available times for a POC on a selected date for updating availability
+const getAvailableTimesForUpdate = async(req, res) => {
+    const { pocId, date } = req.body;
+    console.log(req.body);
+
+    try {
+        const [times] = await pool.execute(
+            `SELECT DISTINCT   
+        Start_Time AS appointment_time,
+        Active_Status AS active_status  
+        FROM poc_available_slots   
+        WHERE POC_ID = ?   
+        AND Schedule_Date = STR_TO_DATE(?, '%Y-%m-%d')   
+        AND (Schedule_Date > CURDATE() OR (Schedule_Date = CURDATE() AND Start_Time >= CURTIME()))   
+        ORDER BY Start_Time`, [pocId, date]
+        );
+        console.log(times);
+        res.json(times);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Fetch available dates for a POC for updating availability
+const getAvailableDatesForUpdate = async(req, res) => {
+    const { pocId } = req.body;
+    console.log(req.body);
+    if (!pocId) {
+        return res.status(400).json({ error: "POC ID is required" });
+    }
+
+    try {
+        const [dates] = await pool.execute(
+            `SELECT DISTINCT  
+  DATE_FORMAT(Schedule_Date, '%Y-%m-%d') AS Schedule_Date,  
+  CASE  
+   WHEN EXISTS (  
+    SELECT 1  
+    FROM poc_available_slots AS slots  
+    WHERE slots.POC_ID = poc_available_slots.POC_ID  
+      AND slots.Schedule_Date = poc_available_slots.Schedule_Date  
+      AND slots.Active_Status = 'blocked'  
+   ) AND NOT EXISTS (  
+    SELECT 1  
+    FROM poc_available_slots AS slots  
+    WHERE slots.POC_ID = poc_available_slots.POC_ID  
+      AND slots.Schedule_Date = poc_available_slots.Schedule_Date  
+      AND slots.Active_Status = 'unblocked'  
+   ) THEN 'blocked'  
+   WHEN EXISTS (  
+    SELECT 1  
+    FROM poc_available_slots AS slots  
+    WHERE slots.POC_ID = poc_available_slots.POC_ID  
+      AND slots.Schedule_Date = poc_available_slots.Schedule_Date  
+      AND slots.Active_Status = 'unblocked'  
+   ) AND NOT EXISTS (  
+    SELECT 1  
+    FROM poc_available_slots AS slots  
+    WHERE slots.POC_ID = poc_available_slots.POC_ID  
+      AND slots.Schedule_Date = poc_available_slots.Schedule_Date  
+      AND slots.Active_Status = 'blocked'  
+   ) THEN 'available'  
+   ELSE 'partial'  
+  END AS active_status  
+FROM poc_available_slots  
+WHERE POC_ID = ?  
+  AND Schedule_Date >= CURDATE()  
+ORDER BY Schedule_Date;
+;
+`, [pocId]
+        );
+        console.log(dates);
+        res.json(dates);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 module.exports = {
     getDepartments,
@@ -213,5 +349,9 @@ module.exports = {
     createAppointment,
     getAvailableDates,
     getAvailableTimes,
-    createUser
+    createUser,
+    updateFullAvailability,
+    updatePartialAvailability,
+    getAvailableTimesForUpdate,
+    getAvailableDatesForUpdate
 };

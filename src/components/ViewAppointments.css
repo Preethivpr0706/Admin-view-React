@@ -1,41 +1,60 @@
-.view-appointments {
+/* Wrapper Styles */
+
+.view-appointments-page {
     max-width: 1200px;
     margin: 40px auto;
-    background-color: #f9f9f9;
+    background-color: #efeded;
     padding: 20px;
     border: 1px solid #ddd;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.view-appointments h1 {
+.view-appointments-page h2 {
     text-align: center;
     margin-bottom: 20px;
 }
 
-.poc-details {
+.view-appointments-page h3 {
     margin-bottom: 20px;
 }
 
-.view-appointments table {
+.view-appointments-page .poc-value {
+    color: #6f7174;
+}
+
+.view-appointments-page .poc-details {
+    margin-bottom: 20px;
+}
+
+.view-appointments-page table {
     border-collapse: collapse;
     width: 100%;
 }
 
-.view-appointments th,
-.view-appointments td {
-    border: 1px solid #ddd;
+.view-appointments-page th,
+.view-appointments-page td {
+    border: 1px solid #2b2a2a;
     padding: 10px;
     text-align: left;
 }
 
-.view-appointments th {
-    background-color: #f0f0f0;
+.view-appointments-page th {
+    background-color: #3f3e3e;
+    color: #ddd
 }
 
-.view-appointments tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
+.view-appointments-page tbody tr:nth-child(odd) {
+    background-color: #cac7c7;
 }
 
-.view-appointments tbody tr:hover {
-    background-color: #ddd;
+.view-appointments-page tbody tr:nth-child(even) {
+    background-color: #989595;
+}
+
+.view-appointments-page tbody tr:hover {
+    background-color: #c8e0eb;
+}
+
+.view-appointments {
+    background-color: #87CEEB
 }

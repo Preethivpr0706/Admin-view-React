@@ -1,6 +1,6 @@
 /* General Styles */
 
-body {
+.book-appointment body {
     margin: 0;
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
@@ -9,7 +9,7 @@ body {
 
 /* Navbar */
 
-.navbar {
+.book-appointment .navbar {
     background-color: #007bff;
     color: white;
     padding: 1rem;
@@ -30,7 +30,7 @@ body {
     border-radius: 8px;
 }
 
-h2 {
+.book-appointment h2 {
     text-align: center;
     color: #333;
 }
@@ -38,7 +38,7 @@ h2 {
 
 /* Confirmation Box */
 
-.confirmation-box {
+.book-appointment .confirmation-box {
     background-color: #ffffff;
     padding: 2rem;
     border-radius: 8px;
@@ -46,17 +46,17 @@ h2 {
     text-align: center;
 }
 
-.confirmation-box h3 {
+.book-appointment .confirmation-box h3 {
     margin-bottom: 1rem;
     color: #007bff;
 }
 
-.confirmation-box p {
+.book-appointment .confirmation-box p {
     font-size: 1.1rem;
     margin: 0.5rem 0;
 }
 
-button {
+.book-appointment button {
     display: inline-block;
     width: 100%;
     padding: 0.8rem;
@@ -70,11 +70,11 @@ button {
     text-align: center;
 }
 
-button:hover {
+.book-appointment button:hover {
     background-color: #0056b3;
 }
 
-button:disabled {
+.book-appointment button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }
@@ -82,9 +82,9 @@ button:disabled {
 
 /* Form Fields */
 
-input[type="text"],
-input[type="email"],
-select {
+.book-appointment input[type="text"],
+.book-appointment input[type="email"],
+.book-appointment select {
     width: calc(100% - 20px);
     margin: 0.5rem 0;
     padding: 0.8rem;
@@ -94,9 +94,9 @@ select {
     box-sizing: border-box;
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-select:focus {
+.book-appointment input[type="text"]:focus,
+.book-appointment input[type="email"]:focus,
+.book-appointment select:focus {
     border-color: #007bff;
     outline: none;
 }
@@ -104,7 +104,7 @@ select:focus {
 
 /* Buttons Styling */
 
-button {
+.book-appointment button {
     display: inline-block;
     width: 100%;
     padding: 0.8rem;
@@ -118,11 +118,11 @@ button {
     text-align: center;
 }
 
-button:hover {
+.book-appointment button:hover {
     background-color: #0056b3;
 }
 
-button:disabled {
+.book-appointment button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
 }
@@ -130,7 +130,7 @@ button:disabled {
 
 /* Dropdown Styles */
 
-select {
+.book-appointment select {
     appearance: none;
     background-color: white;
     cursor: pointer;
@@ -144,7 +144,7 @@ select {
 
 /* Back to Home Button Styling */
 
-.back-home-button {
+.book-appointment .back-home-button {
     background-color: #28a745;
     color: white;
     font-size: 1.1rem;
@@ -157,11 +157,11 @@ select {
     text-align: center;
 }
 
-.back-home-button:hover {
+.book-appointment .back-home-button:hover {
     background-color: #218838;
 }
 
-.back-home-button:focus {
+.book-appointment .back-home-button:focus {
     outline: none;
 }
 
@@ -173,16 +173,16 @@ select {
         margin: 1rem;
         padding: 1rem;
     }
-    h2 {
+    .book-appointment h2 {
         font-size: 1.25rem;
     }
-    button {
+    .book-appointment button {
         font-size: 0.9rem;
     }
-    .confirmation-box {
+    .book-appointment .confirmation-box {
         padding: 1.5rem;
     }
-    .confirmation-box p {
+    .book-appointment .confirmation-box p {
         font-size: 1rem;
     }
 }
